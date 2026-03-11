@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-// Each pantry item belongs to a user and tracks what they have at home.
-// quantities stored in base units (g, ml) after normalization
-const pantryItemSchema = new mongoose.Schema(
+// Items the user needs to buy. These can be added manually or
+// can be added manually or auto-generated from a recipe
+const groceryItemSchema = new mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
@@ -24,17 +24,14 @@ const pantryItemSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
-        category: {
+        // Tracks which recipe triggered this item being added (null if added manually)
+        addedFromRecipe: {
             type: String,
             trim: true,
-            default: "other"
-        },
-        expirationDate: {
-            type: Date,
-            required: true
+            default: null
         }
     },
     { timestamps: true }
 );
 
-module.exports = mongoose.model("PantryItem", pantryItemSchema);
+module.exports = mongoose.model("GroceryItem", groceryItemSchema);

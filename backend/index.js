@@ -1,30 +1,35 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
 const cors = require("cors");
 
+// Route imports
 const pantryRoutes = require("./routes/pantry");
-
-dotenv.config();
+const recipeRoutes = require("./routes/recipes");
+const groceryRoutes = require("./routes/grocery");
+const aiRoutes = require("./routes/ai");
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Pantry routes
-
+// routes
 app.use("/api/pantry", pantryRoutes);
+app.use("/api/recipes", recipeRoutes);
+app.use("/api/grocery", groceryRoutes);
+app.use("/api/ai", aiRoutes);
 
-// Root route
+// Just a simple check to see if the server is alive
 app.get("/", (req, res) => {
     res.json({
         message: "Smart Pantry API Running"
     });
 });
 
-// Health check route
+// Useful for debugging — tells us if Mongo is actually connected
 app.get("/health", (req, res) => {
     const state = mongoose.connection.readyState;
 
@@ -43,7 +48,7 @@ app.get("/health", (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 
-// MongoDB Connection
+// Connect to MongoDB first, then start the server
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("MongoDB connected");
@@ -56,7 +61,6 @@ mongoose.connect(process.env.MONGO_URI)
         console.error("MongoDB connection error:", err.message);
     });
 
-// Error handling middleware
+// Catches any errors that slip through the routes
 const errorHandler = require("./middleware/errorHandler");
-
 app.use(errorHandler);
