@@ -10,34 +10,31 @@ const { grocerySchema } = require("../validation/grocery.validation");
 const { matchIngredients } = require("../utils/ingredientMatch");
 const { normalizeUnit } = require("../utils/unitNormalization");
 
-// placeholder until auth is set up
-const userId = "000000000000000000000000";
-
 // Get the full grocery list
 router.get("/", async (req, res) => {
-    const items = await GroceryItem.find({ user: userId });
+    const items = await GroceryItem.find({ user: req.user._id });
     res.json(items);
 });
 
 // Auto-generate grocery items from a recipe.
 // upsert prevents duplicates
 router.post("/generate/:recipeId", async (req, res) => {
-    const recipe = await Recipe.findOne({ _id: req.params.recipeId, user: userId });
+    const recipe = await Recipe.findOne({ _id: req.params.recipeId, user: req.user._id });
 
     if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
     }
 
-    const pantryItems = await PantryItem.find({ user: userId });
+    const pantryItems = await PantryItem.find({ user: req.user._id });
     const pantryNames = pantryItems.map((item) => item.name);
     const { missing } = matchIngredients(pantryNames, recipe.ingredients);
 
     const groceryItems = await Promise.all(
         missing.map((name) =>
             GroceryItem.findOneAndUpdate(
-                { user: userId, name: name.toLowerCase() },
+                { user: req.user._id, name: name.toLowerCase() },
                 {
-                    user: userId,
+                    user: req.user._id,
                     name: name.toLowerCase(),
                     quantity: 1,
                     unit: "unit",
@@ -61,7 +58,7 @@ router.post("/", validate(grocerySchema), async (req, res) => {
         ...req.body,
         quantity: normalized.quantity,
         unit: normalized.unit,
-        user: userId,
+        user: req.user._id,
     });
     res.status(201).json(item);
 });
@@ -70,7 +67,7 @@ router.post("/", validate(grocerySchema), async (req, res) => {
 router.put("/:id", validate(grocerySchema), async (req, res) => {
     const normalized = normalizeUnit(req.body.quantity, req.body.unit);
     const item = await GroceryItem.findOneAndUpdate(
-        { _id: req.params.id, user: userId },
+        { _id: req.params.id, user: req.user._id },
         { ...req.body, quantity: normalized.quantity, unit: normalized.unit },
         { new: true, runValidators: true }
     );
@@ -86,7 +83,7 @@ router.put("/:id", validate(grocerySchema), async (req, res) => {
 router.delete("/:id", async (req, res) => {
     const item = await GroceryItem.findOneAndDelete({
         _id: req.params.id,
-        user: userId,
+        user: req.user._id,
     });
 
     if (!item) {
@@ -98,7 +95,7 @@ router.delete("/:id", async (req, res) => {
 
 // Wipe the whole grocery list clean
 router.delete("/", async (req, res) => {
-    const result = await GroceryItem.deleteMany({ user: userId });
+    const result = await GroceryItem.deleteMany({ user: req.user._id });
     res.json({ message: `${result.deletedCount} item(s) cleared` });
 });
 

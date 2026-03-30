@@ -9,12 +9,9 @@ const { pantrySchema } = require("../validation/pantry.validation");
 const { EXPIRING_SOON_DAYS, withExpirationStatus } = require("../utils/expiration");
 const { normalizeUnit } = require("../utils/unitNormalization");
 
-// placeholder until auth is set up
-const userId = "000000000000000000000000";
-
 // Grab everything in the pantry, with expiration status attached
 router.get("/", async (req, res) => {
-    const items = await PantryItem.find({ user: userId });
+    const items = await PantryItem.find({ user: req.user._id });
     res.json(items.map((item) => withExpirationStatus(item)));
 });
 
@@ -25,7 +22,7 @@ router.get("/expiring", async (req, res) => {
     threshold.setDate(threshold.getDate() + EXPIRING_SOON_DAYS);
 
     const items = await PantryItem.find({
-        user: userId,
+        user: req.user._id,
         expirationDate: { $gte: now, $lte: threshold },
     });
 
@@ -37,7 +34,7 @@ router.get("/expired", async (req, res) => {
     const now = new Date();
 
     const items = await PantryItem.find({
-        user: userId,
+        user: req.user._id,
         expirationDate: { $lt: now },
     });
 
@@ -51,7 +48,7 @@ router.post("/", validate(pantrySchema), async (req, res) => {
         ...req.body,
         quantity: normalized.quantity,
         unit: normalized.unit,
-        user: userId,
+        user: req.user._id,
     });
     res.status(201).json(item);
 });
@@ -60,7 +57,7 @@ router.post("/", validate(pantrySchema), async (req, res) => {
 router.put("/:id", validate(pantrySchema), async (req, res) => {
     const normalized = normalizeUnit(req.body.quantity, req.body.unit);
     const item = await PantryItem.findOneAndUpdate(
-        { _id: req.params.id, user: userId },
+        { _id: req.params.id, user: req.user._id },
         { ...req.body, quantity: normalized.quantity, unit: normalized.unit },
         { new: true, runValidators: true }
     );
@@ -76,7 +73,7 @@ router.put("/:id", validate(pantrySchema), async (req, res) => {
 router.delete("/:id", async (req, res) => {
     const item = await PantryItem.findOneAndDelete({
         _id: req.params.id,
-        user: userId,
+        user: req.user._id,
     });
 
     if (!item) {

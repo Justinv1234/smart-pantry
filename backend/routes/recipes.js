@@ -8,24 +8,21 @@ const validate = require("../middleware/validate");
 const { recipeSchema } = require("../validation/recipe.validation");
 const { matchIngredients } = require("../utils/ingredientMatch");
 
-// placeholder until auth is set up
-const userId = "000000000000000000000000";
-
 // Get all saved recipes
 router.get("/", async (req, res) => {
-    const recipes = await Recipe.find({ user: userId });
+    const recipes = await Recipe.find({ user: req.user._id });
     res.json(recipes);
 });
 
 // Check one recipe against the pantry — shows matched, missing, and if it's cookable
 router.get("/:id/match", async (req, res) => {
-    const recipe = await Recipe.findOne({ _id: req.params.id, user: userId });
+    const recipe = await Recipe.findOne({ _id: req.params.id, user: req.user._id });
 
     if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
     }
 
-    const pantryItems = await PantryItem.find({ user: userId });
+    const pantryItems = await PantryItem.find({ user: req.user._id });
     const pantryNames = pantryItems.map((item) => item.name);
     const result = matchIngredients(pantryNames, recipe.ingredients);
 
@@ -37,8 +34,8 @@ router.get("/:id/match", async (req, res) => {
 
 // Check ALL recipes against the pantry at once
 router.get("/match/all", async (req, res) => {
-    const recipes = await Recipe.find({ user: userId });
-    const pantryItems = await PantryItem.find({ user: userId });
+    const recipes = await Recipe.find({ user: req.user._id });
+    const pantryItems = await PantryItem.find({ user: req.user._id });
     const pantryNames = pantryItems.map((item) => item.name);
 
     const results = recipes.map((recipe) => ({
@@ -53,7 +50,7 @@ router.get("/match/all", async (req, res) => {
 router.post("/", validate(recipeSchema), async (req, res) => {
     const recipe = await Recipe.create({
         ...req.body,
-        user: userId,
+        user: req.user._id,
     });
     res.status(201).json(recipe);
 });
@@ -61,7 +58,7 @@ router.post("/", validate(recipeSchema), async (req, res) => {
 // Update a recipe
 router.put("/:id", validate(recipeSchema), async (req, res) => {
     const recipe = await Recipe.findOneAndUpdate(
-        { _id: req.params.id, user: userId },
+        { _id: req.params.id, user: req.user._id },
         req.body,
         { new: true, runValidators: true }
     );
@@ -77,7 +74,7 @@ router.put("/:id", validate(recipeSchema), async (req, res) => {
 router.delete("/:id", async (req, res) => {
     const recipe = await Recipe.findOneAndDelete({
         _id: req.params.id,
-        user: userId,
+        user: req.user._id,
     });
 
     if (!recipe) {

@@ -4,23 +4,36 @@ dotenv.config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const mongoSanitize = require("express-mongo-sanitize");
 
 // Route imports
+const authRoutes = require("./routes/auth");
 const pantryRoutes = require("./routes/pantry");
 const recipeRoutes = require("./routes/recipes");
 const groceryRoutes = require("./routes/grocery");
 const aiRoutes = require("./routes/ai");
 
+const authMiddleware = require("./middleware/auth");
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+// Express 5: req.query is read-only, so sanitize body and params manually
+app.use((req, _res, next) => {
+    if (req.body) mongoSanitize.sanitize(req.body);
+    if (req.params) mongoSanitize.sanitize(req.params);
+    next();
+});
 
-// routes
-app.use("/api/pantry", pantryRoutes);
-app.use("/api/recipes", recipeRoutes);
-app.use("/api/grocery", groceryRoutes);
-app.use("/api/ai", aiRoutes);
+// public routes
+app.use("/api/auth", authRoutes);
+
+// protected routes
+app.use("/api/pantry", authMiddleware, pantryRoutes);
+app.use("/api/recipes", authMiddleware, recipeRoutes);
+app.use("/api/grocery", authMiddleware, groceryRoutes);
+app.use("/api/ai", authMiddleware, aiRoutes);
 
 // Just a simple check to see if the server is alive
 app.get("/", (req, res) => {

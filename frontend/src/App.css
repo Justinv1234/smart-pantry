@@ -1,0 +1,562 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-top: 72px;
+  padding-bottom: 80px;
+}
+
+/* ---- Responsive visibility ---- */
+.desktop-only { display: none; }
+.mobile-only { display: flex; }
+
+/* ---- Desktop top navbar (hidden on mobile) ---- */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--primary);
+  color: white;
+  align-items: center;
+  padding: 0 24px;
+  height: 56px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-right: 32px;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-tab {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nav-tab:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.nav-tab.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-user {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.nav-logout {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.nav-logout:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ---- Mobile top bar ---- */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--primary);
+  color: white;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.topbar .nav-brand {
+  margin-right: 0;
+}
+
+/* ---- Mobile bottom tab bar ---- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  justify-content: space-around;
+  padding: 6px 0;
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.bottom-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  color: var(--text-muted);
+  padding: 6px 0;
+  border-radius: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.bottom-tab .tab-icon { font-size: 1.25rem; }
+.bottom-tab .tab-label { font-size: 0.6875rem; }
+.bottom-tab.active { color: var(--primary); }
+
+/* ---- Page layout ---- */
+.page h2 {
+  margin-bottom: 20px;
+  font-size: 1.375rem;
+  color: var(--primary);
+}
+
+.page h3 {
+  font-size: 1.125rem;
+  color: var(--text);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.page-header h2,
+.page-header h3 {
+  margin-bottom: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.section {
+  margin-top: 32px;
+}
+
+/* ---- Mobile forms (stacked) ---- */
+.mobile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.form-pair {
+  display: flex;
+  gap: 10px;
+}
+
+.form-pair input { flex: 1; }
+
+/* ---- Desktop forms (horizontal row, hidden on mobile) ---- */
+.form-row {
+  display: none;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+  min-width: 100px;
+}
+
+.form-row input[type="number"] {
+  max-width: 80px;
+  flex: 0 0 80px;
+}
+
+.form-row input[type="date"] {
+  flex: 0 0 160px;
+}
+
+/* ---- Buttons ---- */
+.btn-sm {
+  font-size: 0.8125rem;
+  padding: 7px 14px;
+}
+
+.btn-full {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ---- Item cards (mobile list view) ---- */
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.item-name {
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-detail {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.item-date {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* ---- Recipe cards ---- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card.cookable {
+  border-color: var(--primary-light);
+  background: #f0faf4;
+}
+
+.card.suggestion {
+  border-color: #b8c1ec;
+  background: #f8f9ff;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.card-header strong { font-size: 1rem; }
+
+.card .ingredients {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.card .instructions {
+  font-size: 0.8125rem;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.card .missing {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  margin-bottom: 8px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.card-actions button {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+}
+
+/* ---- Card grid (for desktop recipe cards) ---- */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+/* ---- Badges ---- */
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.badge.fresh { background: var(--primary-bg); color: var(--primary); }
+.badge.expiring { background: var(--warning-bg); color: var(--warning); }
+.badge.expired { background: var(--danger-bg); color: var(--danger); }
+
+/* ---- Utility ---- */
+.alert {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning);
+  color: #663c00;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 32px;
+}
+
+.loading {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 48px;
+}
+
+/* ---- Auth pages ---- */
+.auth-page {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 32px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.auth-page h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--primary);
+}
+
+.auth-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-page .switch-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.auth-page .switch-link button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  text-decoration: underline;
+  padding: 0;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* ---- Barcode Scanner ---- */
+.scanner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.scanner-modal {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  width: 92%;
+  max-width: 400px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.scanner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.scanner-header strong { font-size: 1.1rem; }
+
+.scanner-video-wrap {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.scanner-reader {
+  width: 100%;
+}
+
+.scanner-reader video {
+  border-radius: 12px;
+}
+
+/* Override html5-qrcode inline styles for cleaner look */
+.scanner-reader #qr-shaded-region {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.scanner-status {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  min-height: 1.5em;
+}
+
+/* ============================================
+   DESKTOP (640px+)
+   Original layout: top nav, horizontal forms, tables
+   ============================================ */
+@media (min-width: 640px) {
+  .desktop-only { display: flex; }
+  .mobile-only { display: none !important; }
+
+  .main {
+    padding: 24px 20px;
+    padding-top: 80px;
+    padding-bottom: 24px;
+  }
+
+  .app {
+    padding-bottom: 0;
+  }
+
+  .page h2 {
+    font-size: 1.5rem;
+  }
+
+  /* Hide mobile form, show desktop form-row */
+  .mobile-form { display: none; }
+  .form-row { display: flex; }
+
+  /* Hide +Add / Scan buttons on desktop (form is always visible) */
+  .header-actions { display: none; }
+
+  .page-header {
+    margin-bottom: 20px;
+  }
+
+  /* Desktop tables */
+  .desktop-table {
+    display: table;
+  }
+
+  .mobile-cards {
+    display: none;
+  }
+
+  /* Card grid for recipes */
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .item-list {
+    gap: 12px;
+  }
+}
+
+/* Mobile: hide desktop tables, show card list */
+@media (max-width: 639px) {
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
