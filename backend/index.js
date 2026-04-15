@@ -19,13 +19,17 @@ const authMiddleware = require("./middleware/auth");
 const app = express();
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(",")
+    ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
     : ["http://localhost:5173", "https://localhost:5173"];
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-        callback(new Error("Not allowed by CORS"));
+        // Allow requests with no origin (curl, mobile apps, server-to-server)
+        if (!origin) return callback(null, true);
+        // Allow wildcard
+        if (allowedOrigins.includes("*")) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(null, false);
     },
     credentials: true,
 }));
