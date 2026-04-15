@@ -11,6 +11,17 @@ import {
 
 const empty = { name: "", ingredients: "" };
 
+const QUICK_PREFS = [
+  "Vegan",
+  "Vegetarian",
+  "Chicken only",
+  "No dairy",
+  "Gluten-free",
+  "Low carb",
+  "High protein",
+  "Quick (under 30 min)",
+];
+
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState([]);
   const [matches, setMatches] = useState({});
@@ -21,6 +32,10 @@ export default function RecipesPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [savedIndexes, setSavedIndexes] = useState(new Set());
   const [showForm, setShowForm] = useState(false);
+  const [expandedRecipes, setExpandedRecipes] = useState(new Set());
+  const [expandedSuggs, setExpandedSuggs] = useState(new Set());
+  const [preferences, setPreferences] = useState("");
+  const [activeChips, setActiveChips] = useState(new Set());
 
   const load = async () => {
     try {
@@ -37,6 +52,30 @@ export default function RecipesPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const toggleRecipe = (id) => {
+    setExpandedRecipes((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleChip = (chip) => {
+    setActiveChips((prev) => {
+      const next = new Set(prev);
+      next.has(chip) ? next.delete(chip) : next.add(chip);
+      return next;
+    });
+  };
+
+  const toggleSugg = (i) => {
+    setExpandedSuggs((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,6 +115,7 @@ export default function RecipesPage() {
     setAiLoading(true);
     setError("");
     setSuggestions([]);
+    setExpandedSuggs(new Set());
     try {
       const pantry = await getPantryItems();
       const ingredientNames = pantry.map((i) => i.name);
@@ -83,9 +123,12 @@ export default function RecipesPage() {
         setError("Add items to your pantry first to get AI suggestions.");
         return;
       }
-      const data = await generateRecipeSuggestions(ingredientNames);
+      const combined = [
+        ...Array.from(activeChips),
+        preferences.trim(),
+      ].filter(Boolean).join(", ");
+      const data = await generateRecipeSuggestions(ingredientNames, combined);
       setSuggestions(data.recipes || data);
-      setSavedIndexes(new Set());
     } catch (e) {
       setError(e.message);
     } finally {
@@ -98,6 +141,8 @@ export default function RecipesPage() {
       await addRecipe({
         name: suggestion.name,
         ingredients: suggestion.ingredients,
+        instructions: suggestion.instructions || [],
+        portions: suggestion.portions || "",
       });
       setSavedIndexes((prev) => new Set(prev).add(index));
       await load();
@@ -112,9 +157,11 @@ export default function RecipesPage() {
     <div className="page">
       <div className="page-header">
         <h2>Recipes</h2>
-        <button className="btn-sm" onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Cancel" : "+ Add"}
-        </button>
+        <div className="header-actions">
+          <button className="btn-sm" onClick={() => setShowForm(!showForm)}>
+            {showForm ? "Cancel" : "+ Add"}
+          </button>
+        </div>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -128,7 +175,7 @@ export default function RecipesPage() {
             required
           />
           <input
-            placeholder="Ingredients (comma-separated)"
+            placeholder="Ingredients (comma-separated, e.g. 2 cups flour, 1 tsp salt)"
             value={form.ingredients}
             onChange={(e) => setForm({ ...form, ingredients: e.target.value })}
             required
@@ -146,25 +193,55 @@ export default function RecipesPage() {
           <div className="item-list">
             {recipes.map((r) => {
               const m = matches[r._id];
+              const open = expandedRecipes.has(r._id);
               return (
-                <div key={r._id} className={`card ${m?.cookable ? "cookable" : ""}`}>
-                  <div className="card-header">
-                    <strong>{r.name}</strong>
-                    {m?.cookable && <span className="badge fresh">Can Cook!</span>}
-                  </div>
-                  <p className="ingredients">{r.ingredients.join(", ")}</p>
-                  {m && !m.cookable && (
-                    <p className="missing">Missing: {m.missingIngredients.join(", ")}</p>
-                  )}
-                  <div className="card-actions">
-                    {m && !m.cookable && (
-                      <button className="btn-sm" onClick={() => handleAddToGrocery(r._id)}>
-                        Add Missing to Grocery
+                <div key={r._id} className={`recipe-card ${m?.cookable ? "cookable" : ""}`}>
+                  <div className="recipe-card-header">
+                    <div className="recipe-title">
+                      <strong>{r.name}</strong>
+                      {r.portions && <span className="portions-badge">{r.portions}</span>}
+                    </div>
+                    <div className="recipe-meta">
+                      {m?.cookable && <span className="badge fresh">Can Cook!</span>}
+                      <button className="expand-btn" onClick={() => toggleRecipe(r._id)}>
+                        {open ? "▲ Less" : "▼ Details"}
                       </button>
+                    </div>
+                  </div>
+
+                  {open && (
+                    <div className="recipe-body">
+                      <div className="recipe-section">
+                        <span className="recipe-label">Ingredients</span>
+                        <ul className="ingredient-list">
+                          {r.ingredients.map((ing, i) => <li key={i}>{ing}</li>)}
+                        </ul>
+                      </div>
+                      {r.instructions?.length > 0 && (
+                        <div className="recipe-section">
+                          <span className="recipe-label">Instructions</span>
+                          <ol className="instructions-list">
+                            {r.instructions.map((step, i) => <li key={i}>{step}</li>)}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="recipe-footer">
+                    {m && !m.cookable && (
+                      <p className="recipe-missing">Missing: {m.missingIngredients.join(", ")}</p>
                     )}
-                    <button className="btn-danger btn-sm" onClick={() => handleDelete(r._id)}>
-                      Delete
-                    </button>
+                    <div className="card-actions">
+                      {m && !m.cookable && (
+                        <button className="btn-sm" onClick={() => handleAddToGrocery(r._id)}>
+                          Add Missing to Grocery
+                        </button>
+                      )}
+                      <button className="btn-danger btn-sm" onClick={() => handleDelete(r._id)}>
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -178,34 +255,90 @@ export default function RecipesPage() {
         <div className="page-header">
           <h3>AI Suggestions</h3>
           <button className="btn-sm" onClick={handleAiSuggest} disabled={aiLoading}>
-            {aiLoading ? "Generating..." : "Suggest"}
+            {aiLoading ? "Generating..." : "✨ Suggest"}
           </button>
         </div>
+
+        <div className="prefs-panel">
+          <span className="recipe-label">Dietary preferences</span>
+          <div className="chip-row">
+            {QUICK_PREFS.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                className={`pref-chip ${activeChips.has(chip) ? "active" : ""}`}
+                onClick={() => toggleChip(chip)}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+          <input
+            className="prefs-input"
+            placeholder="Or type your own (e.g. no nuts, Mediterranean style…)"
+            value={preferences}
+            onChange={(e) => setPreferences(e.target.value)}
+          />
+        </div>
+        {aiLoading && (
+          <p className="loading" style={{ padding: "24px", fontSize: "0.875rem" }}>
+            Generating recipes from your pantry...
+          </p>
+        )}
         {suggestions.length > 0 && (
           <div className="item-list">
-            {suggestions.map((s, i) => (
-              <div key={i} className="card suggestion">
-                <div className="card-header">
-                  <strong>{s.name}</strong>
+            {suggestions.map((s, i) => {
+              const open = expandedSuggs.has(i);
+              return (
+                <div key={i} className="recipe-card suggestion">
+                  <div className="recipe-card-header">
+                    <div className="recipe-title">
+                      <strong>{s.name}</strong>
+                      {s.portions && <span className="portions-badge">{s.portions}</span>}
+                    </div>
+                    <div className="recipe-meta">
+                      <button className="expand-btn" onClick={() => toggleSugg(i)}>
+                        {open ? "▲ Less" : "▼ Details"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {open && (
+                    <div className="recipe-body">
+                      <div className="recipe-section">
+                        <span className="recipe-label">Ingredients</span>
+                        <ul className="ingredient-list">
+                          {s.ingredients.map((ing, j) => <li key={j}>{ing}</li>)}
+                        </ul>
+                      </div>
+                      {s.instructions?.length > 0 && (
+                        <div className="recipe-section">
+                          <span className="recipe-label">Instructions</span>
+                          <ol className="instructions-list">
+                            {s.instructions.map((step, j) => <li key={j}>{step}</li>)}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="recipe-footer">
+                    {s.missingIngredients?.length > 0 && (
+                      <p className="recipe-missing">Missing: {s.missingIngredients.join(", ")}</p>
+                    )}
+                    <div className="card-actions">
+                      <button
+                        className="btn-sm"
+                        onClick={() => handleSaveSuggestion(s, i)}
+                        disabled={savedIndexes.has(i)}
+                      >
+                        {savedIndexes.has(i) ? "Saved!" : "Save Recipe"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <p className="ingredients">
-                  <strong>Ingredients:</strong> {s.ingredients.join(", ")}
-                </p>
-                <p className="instructions">{s.instructions}</p>
-                {s.missingIngredients?.length > 0 && (
-                  <p className="missing">Missing: {s.missingIngredients.join(", ")}</p>
-                )}
-                <div className="card-actions">
-                  <button
-                    className="btn-sm"
-                    onClick={() => handleSaveSuggestion(s, i)}
-                    disabled={savedIndexes.has(i)}
-                  >
-                    {savedIndexes.has(i) ? "Saved!" : "Save Recipe"}
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

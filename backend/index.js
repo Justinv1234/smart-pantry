@@ -5,6 +5,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const mongoSanitize = require("express-mongo-sanitize");
+const rateLimit = require("express-rate-limit");
 
 // Route imports
 const authRoutes = require("./routes/auth");
@@ -17,8 +18,37 @@ const authMiddleware = require("./middleware/auth");
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",")
+    : ["http://localhost:5173", "https://localhost:5173"];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+}));
 app.use(express.json());
+
+// General rate limit: 100 requests per 15 minutes per IP
+app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many requests, please try again later." }
+}));
+
+// Stricter limit on AI endpoint (OpenAI calls are expensive)
+const aiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many AI requests, please wait a minute." }
+});
+app.use("/api/ai", aiLimiter);
 // Express 5: req.query is read-only, so sanitize body and params manually
 app.use((req, _res, next) => {
     if (req.body) mongoSanitize.sanitize(req.body);

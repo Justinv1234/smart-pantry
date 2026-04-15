@@ -6,14 +6,14 @@ const { generateRecipes } = require("../services/ai/recipeService");
 
 // Send a list of ingredients, get back 3 recipe suggestions
 router.post("/recipes", async (req, res) => {
-    const { ingredients } = req.body;
+    const { ingredients, preferences } = req.body;
 
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
         return res.status(400).json({ message: "ingredients must be a non-empty array" });
     }
 
     try {
-        const result = await generateRecipes(ingredients);
+        const result = await generateRecipes(ingredients, preferences || "");
         res.json({ recipes: JSON.parse(result) });
     } catch (err) {
         res.status(500).json({ message: "Failed to generate recipes", error: err.message });

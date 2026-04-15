@@ -1,4 +1,4 @@
-const BASE_URL = "/api";
+const BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem("token");
@@ -65,5 +65,5 @@ export const deleteRecipe = (id) =>
   request(`/recipes/${id}`, { method: "DELETE" });
 
 // AI
-export const generateRecipeSuggestions = (ingredients) =>
-  request("/ai/recipes", { method: "POST", body: JSON.stringify({ ingredients }) });
+export const generateRecipeSuggestions = (ingredients, preferences = "") =>
+  request("/ai/recipes", { method: "POST", body: JSON.stringify({ ingredients, preferences }) });

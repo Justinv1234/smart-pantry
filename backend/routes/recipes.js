@@ -39,6 +39,7 @@ router.get("/match/all", async (req, res) => {
     const pantryNames = pantryItems.map((item) => item.name);
 
     const results = recipes.map((recipe) => ({
+        recipeId: recipe._id,
         recipe: recipe.name,
         ...matchIngredients(pantryNames, recipe.ingredients),
     }));
