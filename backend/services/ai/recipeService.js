@@ -1,4 +1,4 @@
-const client = require("./openaiClient");
+const getClient = require("./openaiClient");
 
 // Takes a list of ingredients the user has and asks OpenAI to come up with
 async function generateRecipes(ingredients, preferences = "") {
@@ -41,7 +41,7 @@ Rules:
 - "instructions" must have at least 5 detailed steps. Include specific temperatures, cooking times, and techniques in each step.
 - "missingIngredients" lists only ingredients used in the recipe that are NOT present in the provided pantry list.`;
 
-    const response = await client.chat.completions.create({
+    const response = await getClient().chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
     });
