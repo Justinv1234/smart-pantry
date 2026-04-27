@@ -230,7 +230,7 @@ export default function RecipesPage() {
 
                   <div className="recipe-footer">
                     {m && !m.cookable && (
-                      <p className="recipe-missing">Missing: {m.missingIngredients.join(", ")}</p>
+                      <p className="recipe-missing">Missing: {m.missing.join(", ")}</p>
                     )}
                     <div className="card-actions">
                       {m && !m.cookable && (

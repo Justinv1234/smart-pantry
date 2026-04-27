@@ -38,13 +38,13 @@ app.use(express.json());
 // General rate limit: 100 requests per 15 minutes per IP
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: "Too many requests, please try again later." }
 }));
 
-// Stricter limit on AI endpoint (OpenAI calls are expensive)
+// Stricter limit on AI endpoint
 const aiLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 5,
